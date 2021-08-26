@@ -1,0 +1,3 @@
+KeyError in line 20 of /gpfs/gsfs8/users/CGR_integration/MikeDean_ModifiedBaseCalling/workflow/git/Nanopore_RNA-seq/Snakefile:
+'flair'
+  File "/gpfs/gsfs8/users/CGR_integration/MikeDean_ModifiedBaseCalling/workflow/git/Nanopore_RNA-seq/Snakefile", line 20, in <module>

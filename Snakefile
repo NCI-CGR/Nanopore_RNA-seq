@@ -1,6 +1,4 @@
 ### This pipeline is for Oxford Nanopore RNA sequencing data analysis
-# 1)
-# 2)
 
 ## vim: ft=python
 import sys
@@ -17,7 +15,6 @@ run = os.getcwd() + "/"
 raw = config["raw"]
 out = config.get("out","output")
 bo = config["bonito"]
-fl = config["flair"]
 
 # Sample names
 def parse_sampleID(fname):
