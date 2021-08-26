@@ -1,0 +1,14 @@
+#!/bin/bash
+mkdir -p log
+
+module load snakemake/5.24.1 CUDA || exit 1
+
+export LD_LIBRARY_PATH={PATH}/conda/envs/nanopore_RNA/lib/:$LD_LIBRARY_PATH
+export CUDA_VISIBLE_DEVICES=0,1
+export PYTHONPATH=$PYTHONPATH:{PATH}/conda/envs/nanopore_RNA/lib/python3.7/site-packages/
+export GRB_LICENSE_FILE={PATH}/gurobi.lic
+
+snakemake --cores=1 --unlock
+
+sbcmd="sbatch --cpus-per-task={threads} --output=log/snakejob_%j.out --time={cluster.time} --gres={cluster.scratch} --mem={cluster.mem} --partition={cluster.partition}"
+snakemake -pr --cluster-config config/cluster_config.yaml --cluster "$sbcmd" --keep-going --rerun-incomplete --jobs 300 --latency-wait 120 all

@@ -1,0 +1,44 @@
+# Reference
+ref = config["hpv_ref"]
+
+rule minimap2_hpv:
+    input:
+          out + "reads/{sample}/{sample}_filter.fastq",
+          {ref}
+    output:
+          out + "alignment_hpv/{sample}/{sample}.sam"
+    threads: 6
+    shell:
+          """
+          minimap2 -t 6 -ax splice {input[1]} {input[0]} > {output} 2> log/{wildcards.sample}_minimap_hpv.err
+          """
+
+rule samtools_hpv:
+    input:
+          out + "alignment_hpv/{sample}/{sample}.sam"
+    output:
+          out + "alignment_hpv/{sample}/{sample}_aln_sorted.bam"
+    params:
+          mq = config["mq"],
+    threads: 16
+    shell:
+          """
+          samtools view -q {params.mq} -b {input} | samtools sort > {output[0]} 2>log/{wildcards.sample}_minimap_sort_hpv.err
+          samtools index {output[0]} 2>log/{wildcards.sample}_minimap_index_hpv.err
+          """
+rule nanoplot_qc_hpv:
+    input:
+          out + "alignment_hpv/{sample}/{sample}_aln_sorted.bam"
+    output:
+          directory(out + "alignment_hpv/{sample}/qc")
+    threads: 16
+    shell:
+          """
+          NanoPlot -t 16 \
+                   --bam {input} \
+                   --raw -o {output} \
+                   -p {wildcards.sample}_ \
+                   --N50 \
+                   --title {wildcards.sample} \
+                   --downsample 100000 2>log/{wildcards.sample}_qc_hpv.err
+          """

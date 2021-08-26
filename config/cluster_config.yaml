@@ -1,0 +1,53 @@
+__default__:
+    mem: 64g
+    partition: quick,norm
+    time: '4:00:00'
+    scratch: lscratch:10
+
+basecall:
+    mem: 120g
+    partition: gpu
+    time: '240:00:00'
+    scratch: lscratch:500,gpu:p100:2
+
+pychopper:
+    mem: 100g
+    partition: gpu
+    time: '240:00:00'
+    scratch: lscratch:500,gpu:p100:2
+
+minimap2:
+    mem: 160g
+    partition: norm
+    time: '240:00:00'
+    scratch: lscratch:2000
+
+samtools:
+    mem: 120g
+    partition: norm,quick
+    time: '4:00:00'
+    scratch: lscratch:100
+
+stringtie:
+    mem: 120g
+    partition: norm
+    time: '240:00:00'
+    scratch: lscratch:100
+
+flair:
+    mem: 120g
+    partition: norm
+    time: '240:00:00'
+    scratch: lscratch:100
+
+minimap2_hpv:
+    mem: 160g
+    partition: norm
+    time: '240:00:00'
+    scratch: lscratch:2000
+
+cluster:
+    mem: 120g
+    partition: norm
+    time: '240:00:00'
+    scratch: lscratch:100

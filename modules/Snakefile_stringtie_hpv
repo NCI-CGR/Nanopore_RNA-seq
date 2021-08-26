@@ -1,0 +1,45 @@
+ref = config["hpv_ref"]
+gtf = config["hpv_gtf"]
+
+rule stringtie_hpv:
+    input:
+          out + "alignment_hpv/{sample}/{sample}_aln_sorted.bam",
+          {gtf}
+    output:
+          out + "stringtie_hpv/{sample}/{sample}.gtf",
+    params:
+          opts = config["stringtie_opts"]
+    threads: 16
+    shell:
+          """
+          stringtie -L -G {input[1]} -p 16 {params.opts} -o {output} {input[0]} 2>log/{wildcards.sample}_stringtie_hpv.err
+          """
+
+rule gffcompare_hpv:
+    input:
+          out + "stringtie_hpv/{sample}/{sample}.gtf",
+          {gtf},
+          {ref}
+    output:
+          directory(out +"stringtie_hpv/{sample}/{sample}_gffcompare"),
+          out +"stringtie_hpv/{sample}/{sample}_gffcompare/complete.txt"
+    threads: 2
+    shell:
+          """
+          mkdir -p {out}stringtie_hpv/{wildcards.sample}/{wildcards.sample}_gffcompare
+          cd {out}stringtie_hpv/{wildcards.sample}/{wildcards.sample}_gffcompare
+          gffcompare -r {input[1]} -R -Q -s {input[2]} {input[0]} 2>{run}log/{wildcards.sample}_gffcmp_hpv.err
+          touch {output[1]}
+          """
+
+rule gffread_hpv:
+    input:
+          out + "stringtie_hpv/{sample}/{sample}.gtf",
+          {ref}
+    output:
+          out +"stringtie_hpv/{sample}/{sample}_gffread/{sample}_gffread.fa"
+    threads: 2
+    shell:
+          """
+          gffread {input[0]} -g {input[1]} -w {output} 2>log/{wildcards.sample}_gffread_hpv.err
+          """

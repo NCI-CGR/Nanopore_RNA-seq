@@ -1,0 +1,46 @@
+# Path to bonito software
+bonito: "{PATH}/bonito/"
+# Path to raw fast5 data
+raw: "{PATH}/"
+# Output directory, default if no input: "output" in working directory
+out: "{PATH}/"
+# Reference fasta file
+reference: '{PATH}/genome.fa'
+# Reference GTF file
+gtf: "{PATH}/genes.gtf"
+
+# If map to HPV genome as well
+hpv: "yes"
+hpv_ref: "{PATH}/HPVRef_13Types_no-pad.fasta"
+hpv_gtf: "{PATH}/hpv.gtf"
+
+# If use Pychopper to identify, orient and trim full-length Nanopore cDNA reads
+py : "yes"
+
+# For alignment quality filtering
+  # Minmum mapping quality
+mq: 40
+  # Internal priming filter context size:
+poly_context: 24
+  # Maximum allowed poly(A) length in the genome near the 3' end of mapping:
+max_poly_run: 8
+  # Minimium number of reads in BAM bundles:
+bundle_min_reads: 50000
+
+# Stringtie options: --conservative (conservative transcriptome assembly) --rf/--fr (stranded library), etc
+stringtie_opts: "-c 1.5 -m 180 -f 0.01 -j 3 -A gene_abund.tab"
+
+# Freddie options:
+  # scripts:
+split: "{PATH}/freddie/py/freddie_split.py"
+segment: "{PATH}/freddie/py/freddie_segment.py"
+cluster: "{PATH}/freddie/py/freddie_cluster.py"
+isoforms: "{PATH}/freddie/py/freddie_isoforms.py"
+  # gurobi license
+lic : "{PATH}/gurobi.lic"
+  # Minimum contrasting coverage support required for a breakpoint in Segment. Default: 3
+mr1: "--min-read-support-outside 3"
+  # Minimum read support allowed for an isoform in Cluster. Default: 3
+mr2: "--min-isoform-size 3"
+  # Maximum number of candidate breakpoints allowed per segmentation problem in Segment. Default: 50
+mps: "--max-problem-size 50"

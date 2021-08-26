@@ -1,0 +1,72 @@
+# Reference
+ref = config["reference"]
+
+rule basecall:
+    input:
+          raw + "{sample}_fast5/"
+    output:
+          out + "reads/{sample}/{sample}.fastq",
+          out + "reads/{sample}/complete.txt"
+    threads: 32
+    shell:
+          """
+          source {bo}venv3/bin/activate
+          bonito basecaller dna_r9.4.1 {input} --fastq --recursive > {output[0]} 2>log/{wildcards.sample}_basecall.err
+          touch {output}
+          """
+
+rule pychopper:
+    input:
+          out + "reads/{sample}/complete.txt",
+          out + "reads/{sample}/{sample}.fastq"
+    output:
+          out + "reads/{sample}/{sample}_filter.fastq"
+    threads: 16
+    run:
+          if config["py"] == "yes":
+             shell("""cd {out}reads/{wildcards.sample}/;cdna_classifier.py -r report.pdf -S statistics.tsv -u unclassified.fq -w rescued.fq -t 16 {input[1]} {output} 2>{run}log/{wildcards.sample}_pychopper.err""")
+          else:
+              shell("""cp {input[1]} {output}""")
+
+rule minimap2:
+    input:
+          out + "reads/{sample}/{sample}_filter.fastq",
+          {ref}
+    output:
+          out + "alignment/{sample}/{sample}.sam"
+    threads: 6
+    shell:
+          """
+          minimap2 -t 6 -ax splice {input[1]} {input[0]} > {output} 2> log/{wildcards.sample}_minimap.err
+          """
+
+rule samtools:
+    input:
+          out + "alignment/{sample}/{sample}.sam"
+    output:
+          out + "alignment/{sample}/{sample}_aln_sorted.bam"
+    params:
+          mq = config["mq"],
+    threads: 16
+    shell:
+          """
+          samtools view -q {params.mq} -b {input} | samtools sort > {output[0]} 2>log/{wildcards.sample}_minimap_sort.err
+          samtools index {output[0]} 2>log/{wildcards.sample}_minimap_index.err
+          """
+
+rule nanoplot_qc:
+    input:
+          out + "alignment/{sample}/{sample}_aln_sorted.bam"
+    output:
+          directory(out + "alignment/{sample}/qc")
+    threads: 16
+    shell:
+          """
+          NanoPlot -t 16 \
+                   --bam {input} \
+                   --raw -o {output} \
+                   -p {wildcards.sample}_ \
+                   --N50 \
+                   --title {wildcards.sample} \
+                   --downsample 100000 2>log/{wildcards.sample}_qc.err
+          """

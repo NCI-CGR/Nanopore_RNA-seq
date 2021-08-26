@@ -1,0 +1,90 @@
+ref = config["hpv_ref"]
+gtf = config["hpv_gtf"]
+
+rule split_hpv:
+    input:
+          out + "alignment_hpv/{sample}/{sample}_aln_sorted.bam",
+          out + "reads/{sample}/{sample}_filter.fastq"
+    output:
+          out + "freddie_hpv/{sample}/freddie.split/complete.txt"
+    threads: 32
+    params:
+          script = config["split"]
+    shell:
+          """
+          {params.script} -t 32 -b {input[0]} -r {input[1]} -o {out}freddie_hpv/{wildcards.sample}/freddie.split 2>log/{wildcards.sample}_freddie_split_hpv.err
+          touch {output}
+          """
+
+rule segment_hpv:
+    input:
+          out + "freddie_hpv/{sample}/freddie.split/complete.txt"
+    output:
+          out + "freddie_hpv/{sample}/freddie.segment/complete.txt"
+    threads: 32
+    params:
+          script = config["segment"],
+          mr = config["mr1"]
+    shell:
+          """
+          {params.script} -s {out}freddie_hpv/{wildcards.sample}/freddie.split -o {out}freddie_hpv/{wildcards.sample}/freddie.segment -t 32 {params.mr} 2>log/{wildcards.sample}_freddie_segment_hpv.err
+          touch {output}
+          """
+
+rule cluster_hpv:
+    input:
+          out + "freddie_hpv/{sample}/freddie.segment/complete.txt"
+    output:
+          out + "freddie_hpv/{sample}/freddie.cluster/complete.txt"
+    params:
+          script = config["cluster"],
+          mr = config["mr2"]
+    threads: 32
+    shell:
+          """
+          {params.script} -s {out}freddie_hpv/{wildcards.sample}/freddie.segment -o {out}freddie_hpv/{wildcards.sample}/freddie.cluster {params.mr} 2>log/{wildcards.sample}_freddie_cluster_hpv.err
+          touch {output[0]}
+          """
+
+rule isoforms_hpv:
+    input:
+          out + "freddie_hpv/{sample}/freddie.split/complete.txt",
+          out + "freddie_hpv/{sample}/freddie.cluster/complete.txt"
+    output:
+          out + "freddie_hpv/{sample}/{sample}_freddie.isoforms.gtf"
+    threads: 8
+    params:
+          script = config["isoforms"]
+    shell:
+          """
+          {params.script} -s {out}freddie_hpv/{wildcards.sample}/freddie.split -c {out}freddie_hpv/{wildcards.sample}/freddie.cluster -o {out}freddie_hpv/{wildcards.sample}/{wildcards.sample}_freddie.isoforms.gtf -t 8 2>log/{wildcards.sample}_freddie_isoforms_hpv.err
+          """
+
+rule gffcompare2_hpv:
+    input:
+          out + "freddie_hpv/{sample}/{sample}_freddie.isoforms.gtf",
+          {gtf},
+          {ref}
+    output:
+          directory(out +"freddie_hpv/{sample}/{sample}_gffcompare"),
+          out +"freddie_hpv/{sample}/{sample}_gffcompare/complete.txt"
+    threads: 8
+    shell:
+          """
+          mkdir -p {out}freddie_hpv/{wildcards.sample}/{wildcards.sample}_gffcompare
+          cd {out}freddie_hpv/{wildcards.sample}/{wildcards.sample}_gffcompare
+          gffcompare -r {input[1]} -R -Q -s {input[2]} {input[0]} 2>{run}log/{wildcards.sample}_gffcmp2_hpv.err
+          touch {output[1]}
+          """
+
+rule gffread2_hpv:
+    input:
+          out + "freddie_hpv/{sample}/{sample}_freddie.isoforms.gtf",
+          {ref}
+    output:
+          out +"freddie_hpv/{sample}/{sample}_gffread/{sample}_gffread.fa"
+    threads: 2
+    shell:
+          """
+          gffread {input[0]} -g {input[1]} -w {output} 2>log/{wildcards.sample}_gffread2_hpv.err
+          """

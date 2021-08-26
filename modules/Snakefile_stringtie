@@ -1,0 +1,45 @@
+ref = config["reference"]
+gtf = config["gtf"]
+
+rule stringtie:
+    input:
+          out + "alignment/{sample}/{sample}_aln_sorted.bam",
+          {gtf}
+    output:
+          out + "stringtie/{sample}/{sample}.gtf",
+    params:
+          opts = config["stringtie_opts"]
+    threads: 16
+    shell:
+          """
+          stringtie -L -G {input[1]} -p 16 {params.opts} -o {output} {input[0]} 2>log/{wildcards.sample}_stringtie.err
+          """
+
+rule gffcompare:
+    input:
+          out + "stringtie/{sample}/{sample}.gtf",
+          {gtf},
+          {ref}
+    output:
+          directory(out +"stringtie/{sample}/{sample}_gffcompare"),
+          out +"stringtie/{sample}/{sample}_gffcompare/complete.txt"
+    threads: 2
+    shell:
+          """
+          mkdir -p {out}stringtie/{wildcards.sample}/{wildcards.sample}_gffcompare
+          cd {out}stringtie/{wildcards.sample}/{wildcards.sample}_gffcompare
+          gffcompare -r {input[1]} -R -Q -s {input[2]} {input[0]} 2>{run}log/{wildcards.sample}_gffcmp.err
+          touch {output[1]}
+          """
+
+rule gffread:
+    input:
+          out + "stringtie/{sample}/{sample}.gtf",
+          {ref}
+    output:
+          out +"stringtie/{sample}/{sample}_gffread/{sample}_gffread.fa"
+    threads: 2
+    shell:
+          """
+          gffread {input[0]} -g {input[1]} -w {output} 2>log/{wildcards.sample}_gffread.err
+          """
