@@ -20,12 +20,6 @@ py : "yes"
 # For alignment quality filtering
   # Minmum mapping quality
 mq: 40
-  # Internal priming filter context size:
-poly_context: 24
-  # Maximum allowed poly(A) length in the genome near the 3' end of mapping:
-max_poly_run: 8
-  # Minimium number of reads in BAM bundles:
-bundle_min_reads: 50000
 
 # Stringtie options: --conservative (conservative transcriptome assembly) --rf/--fr (stranded library), etc
 stringtie_opts: "-c 1.5 -m 180 -f 0.01 -j 3 -A gene_abund.tab"
