@@ -62,10 +62,10 @@ Optional parameters to run the full analysis on HPV genomes:
   ```
 * Install required software
 * Create conda environment using the provided yaml file and activate it after installation:
-```bash
-conda env create -f env/nanopore_RNA.yaml
-conda activate nanopore_RNA
-```
+  ```bash
+  conda env create -f env/nanopore_RNA.yaml
+  conda activate nanopore_RNA
+  ```
 * Edit and save config/config.yaml
 * To run on an HPC using slurm job scheduler like NIH Biowulf (Pascal GPU or higher architecture required):
 
