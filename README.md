@@ -5,9 +5,9 @@ This snakemake pipeline is for alternative splicing analysis using Nanopore long
 
 Major steps in this workflow include:
 
-1) Basing calling using [BINITO](https://github.com/nanoporetech/bonito)
+1) Basing calling using [BONITO](https://github.com/nanoporetech/bonito)
 2) Alignment using [Minimap2](https://github.com/lh3/minimap2)
-3) Splicing analysis using [Strintie2](https://github.com/skovaka/stringtie2)
+3) Splicing analysis using [Stringtie2](https://github.com/skovaka/stringtie2)
 4) Splicing analysis using [Freddie](https://github.com/vpc-ccg/freddie)
 
 ## Software Requirements
